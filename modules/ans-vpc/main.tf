@@ -3,14 +3,14 @@ data "aws_availability_zones" "available" {
 }
 
 locals {
-  az_count = length(data.aws_availability_zones.available.names)
+  az_count = min(var.az_count, length(data.aws_availability_zones.available.names))
 
   public_subnet_cidr_blocks = [
-    for i in range(var.public_subnet_count) : cidrsubnet(var.cidr, 8, i)
+    for i in range(var.az_count) : cidrsubnet(var.cidr, 8, i)
   ]
 
   private_subnet_cidr_blocks = [
-    for i in range(var.private_subnet_count) : cidrsubnet(var.cidr, 8, var.public_subnet_count + i)
+    for i in range(var.az_count) : cidrsubnet(var.cidr, 8, var.az_count + i)
   ]
 }
 
@@ -23,7 +23,7 @@ resource "aws_vpc" "this" {
 }
 
 resource "aws_subnet" "public" {
-  count = var.public_subnet_count
+  count = var.az_count
 
   cidr_block        = local.public_subnet_cidr_blocks[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
@@ -36,7 +36,7 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count = var.private_subnet_count
+  count = var.az_count
 
   cidr_block        = local.private_subnet_cidr_blocks[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
@@ -59,22 +59,34 @@ resource "aws_internet_gateway" "this" {
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.this.id
+  }
+
   tags = {
     Name = "${var.project_name}-public-route-table"
   }
 }
 
 resource "aws_route_table_association" "public" {
-  count = var.public_subnet_count
+  count = var.az_count
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route" "public" {
-  route_table_id         = aws_route_table.public.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.this.id
+resource "aws_default_route_table" "private" {
+  default_route_table_id = aws_vpc.this.default_route_table_id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.this.id
+  }
+
+  tags = {
+    Name = "${var.project_name}-private-route-table"
+  }
 }
 
 resource "aws_security_group" "public" {
@@ -101,16 +113,16 @@ resource "aws_security_group" "private" {
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    security_groups = [aws_security_group.public.id]
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = local.public_subnet_cidr_blocks
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [aws_vpc.this.cidr_block]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }

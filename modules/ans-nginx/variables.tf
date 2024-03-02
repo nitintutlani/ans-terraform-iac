@@ -20,12 +20,12 @@ variable "vpc_id" {
 
 variable "public_subnet_ids" {
   type        = list(string)
-  description = "The IDs of the public subnets to launch the instances in"
+  description = "The IDs of the public subnets to launch the ALB in"
 }
 
 variable "private_subnet_ids" {
   type        = list(string)
-  description = "The IDs of the private subnets to launch the instances in"
+  description = "The IDs of the private subnets to launch the EC2 instances in"
 }
 
 variable "public_security_group_id" {

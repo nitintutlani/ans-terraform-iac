@@ -6,15 +6,9 @@ variable "project_name" {
 variable "cidr" {
   type        = string
   description = "The CIDR block for the VPC"
-  default = "10.0.0.0/16"
 }
 
-variable "private_subnet_count" {
+variable "az_count" {
   type        = number
-  description = "The number of private subnets to create"
-}
-
-variable "public_subnet_count" {
-  type        = number
-  description = "The number of public subnets to create"
+  description = "The number of azs to create subnets in"
 }

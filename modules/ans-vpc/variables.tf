@@ -1,6 +1,6 @@
 variable "vpc_name" {
   type        = string
-  description = "The name for the VPC"
+  description = "The prefix for the VPC name"
 }
 
 variable "cidr" {

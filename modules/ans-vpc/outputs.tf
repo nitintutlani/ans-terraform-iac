@@ -10,7 +10,7 @@ output "subnet_ids" {
   }
 }
 
-output "security_group_ids" {
+output "security_group_id" {
   value = {
     public = aws_security_group.public.id
     private = aws_security_group.private.id

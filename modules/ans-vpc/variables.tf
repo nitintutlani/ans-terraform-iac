@@ -1,6 +1,6 @@
-variable "vpc_name" {
+variable "project_name" {
   type        = string
-  description = "The prefix for the VPC name"
+  description = "A unique name for your deployment project"
 }
 
 variable "cidr" {
@@ -12,11 +12,9 @@ variable "cidr" {
 variable "private_subnet_count" {
   type        = number
   description = "The number of private subnets to create"
-  default = 3
 }
 
 variable "public_subnet_count" {
   type        = number
   description = "The number of public subnets to create"
-  default = 3
 }

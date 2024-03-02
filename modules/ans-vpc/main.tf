@@ -18,7 +18,7 @@ resource "aws_vpc" "this" {
   cidr_block = var.cidr
 
   tags = {
-    Name = var.vpc_name
+    Name = var.project_name
   }
 }
 
@@ -29,7 +29,7 @@ resource "aws_subnet" "public" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "${var.vpc_name}-public-subnet-${count.index}"
+    Name = "${var.project_name}-public-subnet-${count.index}"
   }
 
   vpc_id = aws_vpc.this.id
@@ -42,7 +42,7 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "${var.vpc_name}-private-subnet-${count.index}"
+    Name = "${var.project_name}-private-subnet-${count.index}"
   }
 
   vpc_id = aws_vpc.this.id
@@ -52,7 +52,7 @@ resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = "${var.vpc_name}-igw"
+    Name = "${var.project_name}-igw"
   }
 }
 
@@ -60,7 +60,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = "${var.vpc_name}-public-route-table"
+    Name = "${var.project_name}-public-route-table"
   }
 }
 
@@ -78,7 +78,7 @@ resource "aws_route" "public" {
 }
 
 resource "aws_security_group" "public" {
-  name_prefix = "${var.vpc_name}-public-sg"
+  name_prefix = "${var.project_name}-public-sg"
   vpc_id      = aws_vpc.this.id
 
   ingress {
@@ -97,7 +97,7 @@ resource "aws_security_group" "public" {
 }
 
 resource "aws_security_group" "private" {
-  name_prefix = "${var.vpc_name}-private-sg"
+  name_prefix = "${var.project_name}-private-sg"
   vpc_id      = aws_vpc.this.id
 
   ingress {

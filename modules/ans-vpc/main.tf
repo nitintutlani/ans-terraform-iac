@@ -1,9 +1,9 @@
 data "aws_availability_zones" "available" {
-    state = "available"
+  state = "available"
 }
 
 locals {
-    az_count = length(data.aws_availability_zones.available.names)
+  az_count = length(data.aws_availability_zones.available.names)
 
   public_subnet_cidr_blocks = [
     for i in range(var.public_subnet_count) : cidrsubnet(var.cidr, 8, i)
@@ -111,6 +111,6 @@ resource "aws_security_group" "private" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    security_groups = [aws_security_group.public.id]
+    cidr_blocks = [aws_vpc.this.cidr_block]
   }
 }

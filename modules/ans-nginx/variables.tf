@@ -18,12 +18,22 @@ variable "vpc_id" {
   description = "Vpc id to launch the instances in"
 }
 
-variable "subnet_ids" {
+variable "public_subnet_ids" {
   type        = list(string)
   description = "The IDs of the public subnets to launch the instances in"
 }
 
-variable "security_group_id" {
+variable "private_subnet_ids" {
+  type        = list(string)
+  description = "The IDs of the private subnets to launch the instances in"
+}
+
+variable "public_security_group_id" {
   type        = string
   description = "The ID of the public security group to associate with the instances"
+}
+
+variable "private_security_group_id" {
+  type        = string
+  description = "The ID of the private security group to associate with the instances"
 }

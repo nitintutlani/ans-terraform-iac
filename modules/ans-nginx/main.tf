@@ -19,9 +19,9 @@ resource "aws_instance" "this" {
 
   ami           = data.aws_ami.amazon_linux.id
   instance_type = var.instance_type
-  subnet_id     = var.subnet_ids[count.index % length(var.subnet_ids)]
+  subnet_id     = var.private_subnet_ids[count.index % length(var.private_subnet_ids)]
 
-  vpc_security_group_ids = [var.security_group_id]
+  vpc_security_group_ids = [var.private_security_group_id]
 
   user_data = <<-EOF
               #!/bin/bash
@@ -42,8 +42,8 @@ resource "aws_lb" "this" {
   name               = var.project_name
   internal           = false
   load_balancer_type = "application"
-  subnets            = var.subnet_ids
-  security_groups    = [var.security_group_id]
+  subnets            = var.public_subnet_ids
+  security_groups    = [var.public_security_group_id]
 }
 
 resource "aws_lb_target_group" "this" {
@@ -51,6 +51,15 @@ resource "aws_lb_target_group" "this" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
+
+  health_check {
+    enabled             = true
+    interval            = 30
+    path                = "/"
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
 }
 
 resource "aws_lb_listener" "this" {

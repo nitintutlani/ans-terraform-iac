@@ -20,10 +20,10 @@ variable "vpc_id" {
 
 variable "subnet_ids" {
   type        = list(string)
-  description = "The IDs of the subnets to launch the instances in"
+  description = "The IDs of the public subnets to launch the instances in"
 }
 
 variable "security_group_id" {
   type        = string
-  description = "The ID of the security groups to associate with the instances"
+  description = "The ID of the public security group to associate with the instances"
 }

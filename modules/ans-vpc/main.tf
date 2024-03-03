@@ -35,19 +35,6 @@ resource "aws_subnet" "public" {
   vpc_id = aws_vpc.this.id
 }
 
-resource "aws_subnet" "private" {
-  count = var.az_count
-
-  cidr_block        = local.private_subnet_cidr_blocks[count.index]
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-
-  tags = {
-    Name = "${var.project_name}-private-subnet-${count.index}"
-  }
-
-  vpc_id = aws_vpc.this.id
-}
-
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
@@ -76,17 +63,48 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_default_route_table" "private" {
-  default_route_table_id = aws_vpc.this.default_route_table_id
+resource "aws_subnet" "private" {
+  count = var.az_count
+
+  cidr_block        = local.private_subnet_cidr_blocks[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name = "${var.project_name}-private-subnet-${count.index}"
+  }
+
+  vpc_id = aws_vpc.this.id
+}
+
+resource "aws_eip" "nat" {}
+
+resource "aws_nat_gateway" "this" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+
+  tags = {
+    Name = "${var.project_name}-nat-gateway"
+  }
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.this.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.this.id
+    gateway_id = aws_nat_gateway.this.id
   }
 
   tags = {
     Name = "${var.project_name}-private-route-table"
   }
+}
+
+resource "aws_route_table_association" "private" {
+  count = var.az_count
+
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
 }
 
 resource "aws_security_group" "public" {
@@ -116,7 +134,7 @@ resource "aws_security_group" "private" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = local.public_subnet_cidr_blocks
+    security_groups = [aws_security_group.public.id]
   }
 
   egress {

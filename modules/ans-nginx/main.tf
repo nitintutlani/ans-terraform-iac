@@ -1,19 +1,3 @@
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["amazon"]
-}
-
 resource "aws_instance" "this" {
   count = var.instance_count
 
@@ -39,7 +23,7 @@ resource "aws_instance" "this" {
 }
 
 resource "aws_lb" "this" {
-  name               = var.project_name
+  name               = "${var.project_name}-lb"
   internal           = false
   load_balancer_type = "application"
   subnets            = var.public_subnet_ids

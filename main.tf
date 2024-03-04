@@ -1,5 +1,6 @@
 module "ans-vpc" {
     source  = "./modules/ans-vpc"
+
     project_name = var.project_name
     cidr = "10.0.0.0/16"
     az_count = var.az_count
@@ -7,6 +8,7 @@ module "ans-vpc" {
 
 module "ans-nginx" {
     source  = "./modules/ans-nginx"
+
     project_name = var.project_name
     vpc_id = module.ans-vpc.vpc_id
     instance_count = var.instance_count
